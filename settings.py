@@ -1,0 +1,24 @@
+from pydantic_settings import BaseSettings
+import os
+class Settings(BaseSettings):
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 5556
+    DB_USER: str = "postgres"
+    BD_DRIVER: str = "postgresql+psycopg2"
+    DB_PASSWORD: str = "POSTGRES_PASSWORD"
+    DB_NAME: str = "todo"
+    JWT_SECRET_KEY: str = 'secret_key'
+    JWT_ENCODE_ALGORITHM: str = 'HS256'
+    GOOGLE_CLIENT_ID: str = '959297149478-5jii1evtafk705nr2vg3jm19tdhmgor9.apps.googleusercontent.com'
+    GOOGLE_CLIENT_SECRET: str = os.getenv('GOOGLE_CLIENT_SECRET')
+    GOOGLE_REDIRECT_URL: str = 'http://localhost:8000/auth/google'
+    GOOGLE_TOKEN_URL: str = 'https://accounts.google.com/o/oauth2/token'
+
+    @property
+    def db_url(self):
+        return f"{self.BD_DRIVER}://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    
+    @property
+    def google_redirect_url(self) -> str:
+        return f"http://accounts.google.com/o/oauth2/auth?response_type=code&client_id={self.GOOGLE_CLIENT_ID}&redirect_uri={self.GOOGLE_REDIRECT_URL}&scope=openid%20email&access_type=offline"
+    
