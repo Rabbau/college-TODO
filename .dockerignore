@@ -1,0 +1,11 @@
+﻿__pycache__/
+*.py[cod]
+.venv/
+env/
+env.bak/
+dist/
+build/
+notes/*.md
+.env
+.env.*
+.git

@@ -17,5 +17,29 @@ services:
       # Postgres 18+ expects mounting at /var/lib/postgresql (see image docs/logs)
       - college_todo_pgdata:/var/lib/postgresql
 
+  app:
+    build: .
+    container_name: college_todo_app
+    depends_on:
+      - db
+    ports:
+      - '8000:8000'
+    restart: always
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: POSTGRES_PASSWORD
+      DB_NAME: todo
+      JWT_SECRET_KEY: secret_key
+      GOOGLE_REDIRECT_URL: http://localhost:8000/auth/google
+      GOOGLE_TOKEN_URL: https://accounts.google.com/o/oauth2/token
+      GOOGLE_CLIENT_ID: 959297149478-5jii1evtafk705nr2vg3jm19tdhmgor9.apps.googleusercontent.com
+    volumes:
+      - notes_data:/app/notes
+
 volumes:
   college_todo_pgdata:
+  notes_data:

@@ -211,3 +211,6 @@ __marimo__/
 .prod.env
 .dev.env
 .prod.env
+#
+# Persistent markdown notes
+notes/*.md

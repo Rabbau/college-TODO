@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import datetime as di
 from datetime import timedelta
+from uuid import uuid4
 from jose import JWTError, jwt
 
 from client import GoogleClient
@@ -16,10 +17,23 @@ class AuthService:
     settings: Settings
     google_client: GoogleClient
 
+    # made by lesha
     def google_auth(self, code: str):
         user_data = self.google_client.get_user_info(code=code)
         print(user_data)
+        email = user_data.get('email')
+        if not email:
+            raise ValueError('Email не получен от Google')
 
+        user = self.user_repository.get_user_by_username(email)
+        if not user:
+            user = self.user_repository.create_user(username=email, password=uuid4().hex)
+
+        access = self.generate_access_token(user_id=user.id)
+        return UserLoginSchema(user_id=user.id, access_token=access), user_data
+    # made by lesha
+
+    # made by lesha
     def get_google_redirect_url(self) -> str:
         return (
             "https://accounts.google.com/o/oauth2/v2/auth"
@@ -30,6 +44,7 @@ class AuthService:
             f"&access_type=offline"
             f"&prompt=consent"
         )
+    # made by lesha
 
     def login(self, username:str, password:str) -> UserLoginSchema:
         user = self.user_repository.get_user_by_username(username)

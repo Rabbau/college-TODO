@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Заметки к задаче</title>
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="note-page">
+
+  <div class="note-wrapper">
+    <header class="note-header">
+      <!-- Круглая кнопка "Назад" -->
+      <button type="button" class="btn btn-circle" onclick="goBack()" title="Назад">←</button>
+      <div>
+        <p class="note-label">Задача</p>
+        <h1 id="taskTitle">{{ task_name or "Заметки" }}</h1>
+      </div>
+    </header>
+
+    <section class="note-editor">
+      <!-- Левая панель: редактор Markdown -->
+      <div class="editor-panel">
+        <label for="noteTextarea">Заметки (Markdown):</label>
+        <textarea id="noteTextarea" spellcheck="false">{{ note_text | e }}</textarea>
+      </div>
+
+      <!-- Правая панель: дата, статусы, предпросмотр -->
+      <div class="editor-panel sidebar">
+        <label for="dueInput">Срок выполнения:</label>
+        <!-- Поле даты с иконкой -->
+        <div class="input-with-icon">
+          <span class="icon">📅</span>
+          <input type="datetime-local" id="dueInput" value="{{ due_value or '' }}">
+        </div>
+
+        <div class="note-meta">
+          <!-- Кастомный чекбокс "Выполнено" -->
+          <label class="checkbox-styled">
+            <input type="checkbox" id="doneInput" {% if done %}checked{% endif %}>
+            <span class="checkmark"></span>
+            <span class="label-text">Выполнено</span>
+          </label>
+          <!-- Кастомный чекбокс "В избранное" со звездой -->
+          <label class="checkbox-styled favorite">
+            <input type="checkbox" id="favoriteInput" {% if favorite %}checked{% endif %}>
+            <span class="checkmark"></span>
+            <span class="label-text">В избранное</span>
+          </label>
+        </div>
+
+        <label for="preview">Предпросмотр:</label>
+        <div id="preview" class="preview-panel"></div>
+      </div>
+    </section>
+
+    <section class="note-actions">
+      <span id="noteStatus" class="note-status-message" aria-live="polite"></span>
+      <!-- Кнопка сохранения с иконкой -->
+      <button class="btn btn-save" id="saveBtn">
+        <span class="btn-icon">💾</span> Сохранить и закрыть
+      </button>
+    </section>
+  </div>
+
+  <script>
+    const taskId = {{ task_id | tojson }};
+    const textarea = document.getElementById('noteTextarea');
+    const preview = document.getElementById('preview');
+    const dueInput = document.getElementById('dueInput');
+    const doneInput = document.getElementById('doneInput');
+    const favoriteInput = document.getElementById('favoriteInput');
+    const statusBlock = document.getElementById('noteStatus');
+
+    function goBack() {
+      window.location.href = '/';
+    }
+
+    function renderPreview() {
+      preview.innerHTML = marked.parse(textarea.value || '');
+    }
+
+    function showStatus(text, isError = true) {
+      statusBlock.textContent = text;
+      statusBlock.classList.toggle('note-status-error', isError);
+    }
+
+    textarea.addEventListener('input', renderPreview);
+    renderPreview();
+
+    async function saveNote() {
+      const payload = {
+        content: textarea.value,
+        due: dueInput.value ? new Date(dueInput.value).toISOString() : null,
+        done: doneInput.checked,
+        favorite: favoriteInput.checked,
+      };
+
+      try {
+        const response = await fetch(`/notes/${taskId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const detail = await response.json().then(data => data.detail || 'Ошибка сохранения').catch(() => 'Ошибка сохранения');
+          showStatus(detail);
+          return;
+        }
+
+        window.location.href = '/';
+      } catch (error) {
+        showStatus('Сервер недоступен');
+      }
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', saveNote);
+  </script>
+</body>
+</html>

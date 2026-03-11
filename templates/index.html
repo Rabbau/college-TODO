@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Мои задачи</title>
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <h1>Мои задачи</h1>
+    <div class="auth-block">
+      {% if authenticated %}
+        <span class="user-label">Привет, {{ user_name or 'пользователь' }}</span>
+        <a class="btn btn-register" href="/logout">Выйти</a>
+      {% else %}
+        <a class="btn btn-login" href="/auth/login/google">Войти через Google</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="status-message" id="statusMessage" hidden></div>
+
+  <div class="controls">
+    <div class="search">
+      <input type="search" id="searchInput" placeholder="Поиск задач..." aria-label="Поиск">
+    </div>
+
+    <div class="sort-buttons">
+      <button data-sort="all" class="active">Все</button>
+      <button data-sort="alpha">По алфавиту</button>
+      <button data-sort="date">По дате создания</button>
+      <button data-sort="due">По сроку</button>
+    </div>
+  </div>
+
+  <div class="add-task">
+    <input type="text" id="newTaskInput" placeholder="Что нужно сделать..." aria-label="Новая задача">
+    <input type="datetime-local" id="newDueDate" aria-label="Срок выполнения">
+    <button id="addBtn" class="btn btn-add">Добавить</button>
+  </div>
+
+  <div class="section-title">Активные</div>
+  <div class="task-list" id="activeTasks"></div>
+
+  <div class="section-title">Сделанное</div>
+  <div class="task-list" id="doneTasks"></div>
+
+</div>
+<script src="{{ url_for('static', path='script.js') }}"></script>
+</body>
+</html>

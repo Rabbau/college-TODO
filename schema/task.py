@@ -1,24 +1,35 @@
+﻿from datetime import datetime
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel
+
+
+class TaskBase(BaseModel):
+    name: str
+    pomodoro: int | None = None
+    category_id: int | None = None
+    due: datetime | None = None
+
+
+class TaskCreateSchema(TaskBase):
+    pass
+
+
+class TaskStatusUpdateSchema(BaseModel):
+    due: datetime | None = None
+    done: bool | None = None
+    favorite: bool | None = None
+
 
 class Task(BaseModel):
-    id : int | None = None
-    name: str | None = None
+    id: int
+    name: str
     pomodoro: int | None = None
-    category_id: int 
+    category_id: int
     user_id: int
+    due: datetime | None = None
+    done: bool
+    favorite: bool
+    notes_preview: str | None = None
 
     class Config:
         from_attributes = True
-
-    @model_validator(mode="after")
-    def check_name_or_count_not_null(self):
-        if self.name is None and self.count is None:
-            raise ValueError("пустое")
-        
-        return self
-    
-class TaskCreateSchema(BaseModel):
-    name: str | None = None
-    pomodoro: int | None = None
-    category_id: int 
