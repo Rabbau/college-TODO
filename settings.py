@@ -27,7 +27,6 @@ class Settings(BaseSettings):
     @property
     def db_url(self):
         return f"{self.BD_DRIVER}://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-    
     @property
     def google_redirect_url(self) -> str:
         return f"http://accounts.google.com/o/oauth2/auth?response_type=code&client_id={self.GOOGLE_CLIENT_ID}&redirect_uri={self.GOOGLE_REDIRECT_URL}&scope=openid%20email&access_type=offline"
