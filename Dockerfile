@@ -5,11 +5,15 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock /app/
+COPY pyproject.toml poetry.lock requirements.txt /app/
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq-dev build-essential && \
+RUN apt-get update --fix-missing && \
+    apt-get install -y --no-install-recommends libpq-dev build-essential ca-certificates && \
     rm -rf /var/lib/apt/lists/*
+
+RUN update-ca-certificates
+
+RUN pip install --no-cache-dir -r requirements.txt
     
 COPY . /app
 

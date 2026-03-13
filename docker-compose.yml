@@ -27,16 +27,6 @@ services:
     restart: always
     env_file:
       - .env
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: POSTGRES_PASSWORD
-      DB_NAME: todo
-      JWT_SECRET_KEY: secret_key
-      GOOGLE_REDIRECT_URL: http://localhost:8000/auth/google
-      GOOGLE_TOKEN_URL: https://accounts.google.com/o/oauth2/token
-      GOOGLE_CLIENT_ID: 959297149478-5jii1evtafk705nr2vg3jm19tdhmgor9.apps.googleusercontent.com
     volumes:
       - notes_data:/app/notes
 
