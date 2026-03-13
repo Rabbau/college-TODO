@@ -12,12 +12,12 @@ class Settings(BaseSettings):
     DB_PORT: int = 5556
     DB_USER: str = "postgres"
     BD_DRIVER: str = "postgresql+psycopg2"
-    DB_PASSWORD: str = "POSTGRES_PASSWORD"
+    DB_PASSWORD: str = ""
     DB_NAME: str = "todo"
-    JWT_SECRET_KEY: str = 'secret_key'
+    JWT_SECRET_KEY: str = ""
     JWT_ENCODE_ALGORITHM: str = 'HS256'
     NOTES_DIR: str = "notes"
-    GOOGLE_CLIENT_ID: str = '779233572987-ho1tt82pf3s5d5h6b4qugdqqijjefp0b.apps.googleusercontent.com'
+    GOOGLE_CLIENT_ID: str = ''
     GOOGLE_CLIENT_SECRET: str = ''
     GOOGLE_REDIRECT_URL: str = 'http://localhost:8000/auth/google'
     GOOGLE_TOKEN_URL: str = 'https://accounts.google.com/o/oauth2/token'

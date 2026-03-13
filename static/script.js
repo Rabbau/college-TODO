@@ -151,7 +151,13 @@ function render() {
   if (active.length === 0) {
     activeList.innerHTML = '<div class="empty-message">Нет активных задач</div>';
   } else {
-    active.forEach(task => activeList.appendChild(createTaskElement(task)));
+    const orderIndex = new Map(sorted.map((task, index) => [task.id, index]));
+    active
+      .sort((a, b) => {
+        if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+        return (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0);
+      })
+      .forEach(task => activeList.appendChild(createTaskElement(task)));
   }
 
   if (done.length === 0) {
