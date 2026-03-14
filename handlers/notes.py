@@ -25,6 +25,9 @@ async def get_note(
         due=task.due,
         done=task.done,
         favorite=task.favorite,
+        # made by kirill
+        importance=task.importance,
+        # made by kirill
     )
 
 
@@ -46,6 +49,9 @@ async def update_note(
         due=body.due,
         done=body.done,
         favorite=body.favorite,
+        # made by kirill
+        importance=body.importance,
+        # made by kirill
     )
     updated_task = task_service.update_task_state(task_id=task_id, user_id=user_id, payload=state_payload)
 
@@ -54,4 +60,7 @@ async def update_note(
         due=updated_task.due,
         done=updated_task.done,
         favorite=updated_task.favorite,
+        # made by kirill
+        importance=updated_task.importance,
+        # made by kirill
     )

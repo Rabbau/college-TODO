@@ -13,6 +13,14 @@
 
   <header class="header">
     <h1>Мои задачи</h1>
+    <div class="theme-switcher">
+      <label for="themeSelect">Тема</label>
+      <select id="themeSelect" aria-label="Выбор темы">
+        <option value="blue">Синяя</option>
+        <option value="dark">Тёмная</option>
+        <option value="light">Белая</option>
+      </select>
+    </div>
     <div class="auth-block">
       {% if authenticated %}
         <span class="user-label">Привет, {{ user_name or 'пользователь' }}</span>
@@ -41,6 +49,13 @@
   <div class="add-task">
     <input type="text" id="newTaskInput" placeholder="Что нужно сделать..." aria-label="Новая задача">
     <input type="datetime-local" id="newDueDate" aria-label="Срок выполнения">
+    <select id="newImportance" aria-label="Важность">
+      <option value="">Важность: нейтрально</option>
+      <option value="можно отложить">Можно отложить</option>
+      <option value="нейтрально" selected>Нейтрально</option>
+      <option value="важно">Важно</option>
+      <option value="срочно">Срочно</option>
+    </select>
     <button id="addBtn" class="btn btn-add">Добавить</button>
   </div>
 
@@ -51,6 +66,8 @@
   <div class="task-list" id="doneTasks"></div>
 
 </div>
-<script src="{{ url_for('static', path='script.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="{{ url_for('static', path='theme.js') }}"></script>
+  <script src="{{ url_for('static', path='script.js') }}"></script>
 </body>
 </html>

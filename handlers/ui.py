@@ -69,6 +69,7 @@ async def note_page(
             "due_value": _format_due(task.due),
             "done": task.done,
             "favorite": task.favorite,
+            "importance": task.importance,
         },
     )
 

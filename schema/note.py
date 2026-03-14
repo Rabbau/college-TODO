@@ -8,6 +8,9 @@ class NoteUpdateSchema(BaseModel):
     due: datetime | None = None
     done: bool = False
     favorite: bool = False
+    # made by kirill
+    importance: str | None = None
+    # made by kirill
 
 
 class NoteResponseSchema(BaseModel):
@@ -15,3 +18,6 @@ class NoteResponseSchema(BaseModel):
     due: datetime | None = None
     done: bool
     favorite: bool
+    # made by kirill
+    importance: str
+    # made by kirill

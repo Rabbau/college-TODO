@@ -2,6 +2,7 @@ const activeList = document.getElementById('activeTasks');
 const doneList = document.getElementById('doneTasks');
 const newInput = document.getElementById('newTaskInput');
 const newDueDate = document.getElementById('newDueDate');
+const newImportance = document.getElementById('newImportance');
 const addBtn = document.getElementById('addBtn');
 const searchInput = document.getElementById('searchInput');
 const sortButtons = document.querySelectorAll('[data-sort]');
@@ -47,8 +48,12 @@ function formatDueDate(isoString) {
     minute: '2-digit',
   });
 
+  const badgeHtml = badgeText
+    ? `<span class="due-badge ${badgeClass}">${badgeText}</span>`
+    : '';
+
   return `
-    <span class="due-badge ${badgeClass}">${badgeText}</span>
+    ${badgeHtml}
     <span class="due-date">${timeStr}</span>
   `;
 }
@@ -71,6 +76,7 @@ function lockUI() {
   addBtn.disabled = true;
   newInput.disabled = true;
   newDueDate.disabled = true;
+  if (newImportance) newImportance.disabled = true;
   searchInput.disabled = true;
   sortButtons.forEach(button => {
     button.disabled = true;
@@ -81,6 +87,7 @@ function unlockUI() {
   addBtn.disabled = false;
   newInput.disabled = false;
   newDueDate.disabled = false;
+  if (newImportance) newImportance.disabled = false;
   searchInput.disabled = false;
   sortButtons.forEach(button => {
     button.disabled = false;
@@ -171,13 +178,35 @@ function createTaskElement(task) {
   const div = document.createElement('div');
   div.className = `task ${task.done ? 'done' : ''}`;
   div.dataset.id = task.id;
-  const notesPreview = escapeHtml(task.notes_preview || 'Нет заметок').replace(/\n/g, '<br>');
+  const rawPreview = task.notes_preview || '';
+  let notesPreview = '';
+  if (rawPreview) {
+    if (window.marked) {
+      try {
+        notesPreview = window.marked.parse(rawPreview);
+      } catch {
+        notesPreview = escapeHtml(rawPreview).replace(/\n/g, '<br>');
+      }
+    } else {
+      notesPreview = escapeHtml(rawPreview).replace(/\n/g, '<br>');
+    }
+  } else {
+    notesPreview = '<span class="notes-placeholder">Нет заметок</span>';
+  }
   const dueHtml = task.due ? `<div class="due-wrapper">${formatDueDate(task.due)}</div>` : '';
+  const importance = escapeHtml(task.importance || 'нейтрально');
+  let importanceClass = 'neutral';
+  if (importance === 'срочно') importanceClass = 'urgent';
+  else if (importance === 'важно') importanceClass = 'high';
+  else if (importance === 'можно отложить') importanceClass = 'low';
 
   div.innerHTML = `
     <input type="checkbox" ${task.done ? 'checked' : ''}>
     <div class="task-content">
-      <span class="task-text">${escapeHtml(task.name)}</span>
+      <div class="task-header-row">
+        <span class="task-text">${escapeHtml(task.name)}</span>
+        <span class="importance-badge importance-${importanceClass}">${importance}</span>
+      </div>
       ${dueHtml}
       <div class="notes-preview">${notesPreview}</div>
     </div>
@@ -252,12 +281,13 @@ async function addNewTask() {
   const text = newInput.value.trim();
   if (!text) return;
   const due = newDueDate.value ? new Date(newDueDate.value).toISOString() : null;
+  const importance = newImportance ? newImportance.value || null : null;
 
   try {
     const response = await authFetch('/task/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: text, due }),
+      body: JSON.stringify({ name: text, due, importance }),
     });
     const created = await response.json();
     tasks.unshift(created);

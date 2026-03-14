@@ -60,5 +60,8 @@ class TaskService:
             due=task.due,
             done=task.done,
             favorite=task.favorite,
+            # made by kirill
+            importance=task.importance,
+            # made by kirill
             notes_preview=preview,
         )

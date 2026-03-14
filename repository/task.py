@@ -47,6 +47,9 @@ class TaskRepository:
             due=task.due,
             done=False,
             favorite=False,
+            # made by kirill
+            importance=task.importance or "нейтрально",
+            # made by kirill
         )
         with self.db_session() as session:
             session.add(task_model)

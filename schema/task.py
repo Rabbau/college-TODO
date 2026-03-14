@@ -8,6 +8,9 @@ class TaskBase(BaseModel):
     pomodoro: int | None = None
     category_id: int | None = None
     due: datetime | None = None
+    # made by kirill
+    importance: str | None = None
+    # made by kirill
 
 
 class TaskCreateSchema(TaskBase):
@@ -18,6 +21,9 @@ class TaskStatusUpdateSchema(BaseModel):
     due: datetime | None = None
     done: bool | None = None
     favorite: bool | None = None
+    # made by kirill
+    importance: str | None = None
+    # made by kirill
 
 
 class Task(BaseModel):
@@ -29,6 +35,9 @@ class Task(BaseModel):
     due: datetime | None = None
     done: bool
     favorite: bool
+    # made by kirill
+    importance: str
+    # made by kirill
     notes_preview: str | None = None
 
     class Config:

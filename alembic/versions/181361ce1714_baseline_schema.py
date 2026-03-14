@@ -20,6 +20,7 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # made by kirill
     op.create_table(
         "UserProfile",
         sa.Column("id", sa.Integer(), primary_key=True, nullable=False),
@@ -42,6 +43,7 @@ def upgrade() -> None:
         sa.Column("category_id", sa.Integer(), nullable=False),
         sa.Column("user_id", sa.Integer(), sa.ForeignKey("UserProfile.id"), nullable=False),
     )
+    # made by kirill
 
 
 def downgrade() -> None:

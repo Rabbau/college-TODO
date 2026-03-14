@@ -11,48 +11,90 @@
 <body class="note-page">
 
   <div class="note-wrapper">
+    {% set current_importance = importance or 'нейтрально' %}
     <header class="note-header">
       <!-- Круглая кнопка "Назад" -->
-      <button type="button" class="btn btn-circle" onclick="goBack()" title="Назад">←</button>
-      <div>
+      <button type="button" class="btn btn-circle" onclick="goBack()" title="Назад" aria-label="Назад">
+        <span class="icon-back"></span>
+      </button>
+      <div class="note-header-main">
         <p class="note-label">Задача</p>
         <h1 id="taskTitle">{{ task_name or "Заметки" }}</h1>
+        <div class="note-meta-summary">
+          <span class="meta-chip">
+            <span class="meta-label">Срок:</span>
+            <span class="meta-value">
+              {% if due_value %}{{ due_value }}{% else %}не задан{% endif %}
+            </span>
+          </span>
+          <span class="meta-separator">•</span>
+          <span class="meta-chip">
+            <span class="meta-label">Важность:</span>
+            <span class="meta-value">{{ current_importance }}</span>
+          </span>
+        </div>
+      </div>
+      <div class="note-tools">
+        <div class="theme-switcher">
+          <label for="themeSelect">Тема</label>
+          <select id="themeSelect" aria-label="Выбор темы">
+            <option value="blue">Синяя</option>
+            <option value="dark">Тёмная</option>
+            <option value="light">Белая</option>
+          </select>
+        </div>
       </div>
     </header>
 
     <section class="note-editor">
-      <!-- Левая панель: редактор Markdown -->
+      <!-- Левая панель: просмотр/редактор Markdown -->
       <div class="editor-panel">
         <label for="noteTextarea">Заметки (Markdown):</label>
-        <textarea id="noteTextarea" spellcheck="false">{{ note_text | e }}</textarea>
+        <div class="note-live" id="noteLive">
+          <div id="noteDisplay" class="note-display"></div>
+          <textarea id="noteTextarea" class="live-editor" spellcheck="false" hidden>{{ note_text | e }}</textarea>
+        </div>
+        <div class="live-hint">Кликните по заметке, чтобы редактировать. Выход — клик вне блока.</div>
       </div>
 
       <!-- Правая панель: дата, статусы, предпросмотр -->
       <div class="editor-panel sidebar">
-        <label for="dueInput">Срок выполнения:</label>
-        <!-- Поле даты с иконкой -->
-        <div class="input-with-icon">
-          <span class="icon">📅</span>
-          <input type="datetime-local" id="dueInput" value="{{ due_value or '' }}">
+        <div class="sidebar-section">
+          <label for="dueInput">Срок выполнения:</label>
+          <!-- Поле даты с иконкой -->
+          <div class="input-with-icon">
+            <span class="icon icon-calendar"></span>
+            <input type="datetime-local" id="dueInput" value="{{ due_value or '' }}">
+          </div>
+
+          <label for="importanceInput">Важность:</label>
+          <select id="importanceInput" class="importance-select">
+            <option value="можно отложить" {% if current_importance == 'можно отложить' %}selected{% endif %}>Можно отложить</option>
+            <option value="нейтрально" {% if current_importance == 'нейтрально' %}selected{% endif %}>Нейтрально</option>
+            <option value="важно" {% if current_importance == 'важно' %}selected{% endif %}>Важно</option>
+            <option value="срочно" {% if current_importance == 'срочно' %}selected{% endif %}>Срочно</option>
+          </select>
+
+          <div class="note-meta">
+            <!-- Кастомный чекбокс "Выполнено" -->
+            <label class="checkbox-styled">
+              <input type="checkbox" id="doneInput" {% if done %}checked{% endif %}>
+              <span class="checkmark"></span>
+              <span class="label-text">Выполнено</span>
+            </label>
+            <!-- Кастомный чекбокс "В избранное" со звездой -->
+            <label class="checkbox-styled favorite">
+              <input type="checkbox" id="favoriteInput" {% if favorite %}checked{% endif %}>
+              <span class="checkmark"></span>
+              <span class="label-text">В избранное</span>
+            </label>
+          </div>
         </div>
 
-        <div class="note-meta">
-          <!-- Кастомный чекбокс "Выполнено" -->
-          <label class="checkbox-styled">
-            <input type="checkbox" id="doneInput" {% if done %}checked{% endif %}>
-            <span class="checkmark"></span>
-            <span class="label-text">Выполнено</span>
-          </label>
-          <!-- Кастомный чекбокс "В избранное" со звездой -->
-          <label class="checkbox-styled favorite">
-            <input type="checkbox" id="favoriteInput" {% if favorite %}checked{% endif %}>
-            <span class="checkmark"></span>
-            <span class="label-text">В избранное</span>
-          </label>
+        <div class="sidebar-section">
+          <label for="previewLegacy">Предпросмотр</label>
+          <div id="previewLegacy" class="preview-panel"></div>
         </div>
-
-        <label for="preview">Предпросмотр:</label>
-        <div id="preview" class="preview-panel"></div>
       </div>
     </section>
 
@@ -60,26 +102,30 @@
       <span id="noteStatus" class="note-status-message" aria-live="polite"></span>
       <!-- Кнопка сохранения с иконкой -->
       <button class="btn btn-save" id="saveBtn">
-        <span class="btn-icon">💾</span> Сохранить и закрыть
+        <span class="btn-icon icon-save" aria-hidden="true"></span>
+        <span class="btn-text">Сохранить и закрыть</span>
       </button>
     </section>
   </div>
 
+  <script src="{{ url_for('static', path='theme.js') }}"></script>
   <script>
     const taskId = {{ task_id | tojson }};
     const textarea = document.getElementById('noteTextarea');
-    const preview = document.getElementById('preview');
+    const liveContainer = document.getElementById('noteLive');
+    const noteDisplay = document.getElementById('noteDisplay');
     const dueInput = document.getElementById('dueInput');
     const doneInput = document.getElementById('doneInput');
     const favoriteInput = document.getElementById('favoriteInput');
+    const importanceInput = document.getElementById('importanceInput');
     const statusBlock = document.getElementById('noteStatus');
+    const autosaveDelay = 800;
+    let autosaveTimer = null;
+    let lastSavedPayload = null;
+    const previewEl = document.getElementById('previewLegacy');
 
     function goBack() {
       window.location.href = '/';
-    }
-
-    function renderPreview() {
-      preview.innerHTML = marked.parse(textarea.value || '');
     }
 
     function showStatus(text, isError = true) {
@@ -87,18 +133,105 @@
       statusBlock.classList.toggle('note-status-error', isError);
     }
 
-    textarea.addEventListener('input', renderPreview);
+    function renderPreview() {
+      const raw = textarea.value || '';
+      // Правый предпросмотр
+      if (previewEl) {
+        try {
+          previewEl.innerHTML = window.marked.parse(raw);
+        } catch {
+          previewEl.textContent = raw;
+        }
+      }
+      // Основной просмотр слева (Markdown)
+      if (noteDisplay) {
+        try {
+          noteDisplay.innerHTML = window.marked.parse(raw);
+        } catch {
+          noteDisplay.textContent = raw;
+        }
+      }
+    }
+
+    function buildPayload() {
+      return {
+        content: textarea.value,
+        due: dueInput.value ? new Date(dueInput.value).toISOString() : null,
+        done: doneInput.checked,
+        favorite: favoriteInput.checked,
+        importance: importanceInput.value || null,
+      };
+    }
+
+    function scheduleSave() {
+      if (autosaveTimer) {
+        clearTimeout(autosaveTimer);
+      }
+      autosaveTimer = setTimeout(() => {
+        saveNote({ redirect: false });
+      }, autosaveDelay);
+    }
+
+    function enterEdit() {
+      if (!liveContainer.classList.contains('is-editing')) {
+        liveContainer.classList.add('is-editing');
+        if (noteDisplay) {
+          noteDisplay.hidden = true;
+        }
+        textarea.hidden = false;
+        textarea.focus();
+        textarea.selectionStart = textarea.value.length;
+        textarea.selectionEnd = textarea.value.length;
+      }
+    }
+
+    function exitEdit() {
+      if (liveContainer.classList.contains('is-editing')) {
+        liveContainer.classList.remove('is-editing');
+        scheduleSave();
+        if (noteDisplay) {
+          noteDisplay.hidden = false;
+        }
+        textarea.hidden = true;
+        renderPreview();
+      }
+    }
+
+    textarea.addEventListener('input', () => {
+      scheduleSave();
+      renderPreview();
+    });
+    dueInput.addEventListener('change', scheduleSave);
+    doneInput.addEventListener('change', scheduleSave);
+    favoriteInput.addEventListener('change', scheduleSave);
+    importanceInput.addEventListener('change', scheduleSave);
+
+    liveContainer.addEventListener('click', event => {
+      event.stopPropagation();
+      enterEdit();
+    });
+
+    document.addEventListener('click', event => {
+      if (!liveContainer.contains(event.target)) {
+        exitEdit();
+      }
+    });
+    lastSavedPayload = JSON.stringify(buildPayload());
     renderPreview();
 
-    async function saveNote() {
+    async function saveNote({ redirect = false } = {}) {
       const payload = {
         content: textarea.value,
         due: dueInput.value ? new Date(dueInput.value).toISOString() : null,
         done: doneInput.checked,
         favorite: favoriteInput.checked,
+        importance: importanceInput.value || null,
       };
+      const payloadKey = JSON.stringify(payload);
+      if (payloadKey === lastSavedPayload && !redirect) return;
 
       try {
+        showStatus('Сохранение...', false);
         const response = await fetch(`/notes/${taskId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -112,13 +245,17 @@
           return;
         }
 
-        window.location.href = '/';
+        lastSavedPayload = payloadKey;
+        showStatus('Сохранено', false);
+        if (redirect) {
+          window.location.href = '/';
+        }
       } catch (error) {
         showStatus('Сервер недоступен');
       }
     }
 
-    document.getElementById('saveBtn').addEventListener('click', saveNote);
+    document.getElementById('saveBtn').addEventListener('click', () => saveNote({ redirect: true }));
   </script>
 </body>
 </html>
