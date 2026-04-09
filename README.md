@@ -70,3 +70,5 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 **Хранение заметок**
 Заметки сохраняются в директории, заданной `NOTES_DIR` (по умолчанию `notes`). Для Docker используется volume `notes_data`.
+
+сайт: https://rabbl.ru/
